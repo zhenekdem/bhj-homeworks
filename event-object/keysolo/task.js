@@ -4,6 +4,8 @@ class Game {
     this.wordElement = container.querySelector('.word');
     this.winsElement = container.querySelector('.status__wins');
     this.lossElement = container.querySelector('.status__loss');
+    this.timerElement = container.querySelector('.timer__value');
+    this.timerId = null;
 
     this.reset();
 
@@ -17,15 +19,32 @@ class Game {
   }
 
   registerEvents() {
-    /*
-      TODO:
-      Написать обработчик события, который откликается
-      на каждый введённый символ.
-      В случае правильного ввода символа вызываем this.success()
-      При неправильном вводе символа - this.fail();
-      DOM-элемент текущего символа находится в свойстве this.currentSymbol.
-     */
+    document.addEventListener('keyup', (event) => {
+    const expectedSymbol = this.currentSymbol.textContent;
+    const pressedKey = String.fromCharCode(event.keyCode);
+    if (pressedKey.toLowerCase() === expectedSymbol.toLowerCase()) {
+      this.success();
+    } else {
+      this.fail();
+      }
+    });
   }
+
+    startTimer() {
+      clearInterval(this.timerId);
+
+      let timeLeft = this.wordElement.textContent.length;
+      this.timerElement.textContent = timeLeft;
+      this.timerId = setInterval(() => {
+        timeLeft--;
+      this.timerElement.textContent = timeLeft;
+
+       if (timeLeft <= 0) {
+      clearInterval(this.timerId);
+      this.fail();
+       }
+      }, 1000);
+    }
 
   success() {
     if(this.currentSymbol.classList.contains("symbol_current")) this.currentSymbol.classList.remove("symbol_current");
@@ -40,6 +59,7 @@ class Game {
     if (++this.winsElement.textContent === 10) {
       alert('Победа!');
       this.reset();
+      return;
     }
     this.setNewWord();
   }
@@ -48,6 +68,7 @@ class Game {
     if (++this.lossElement.textContent === 5) {
       alert('Вы проиграли!');
       this.reset();
+      return;
     }
     this.setNewWord();
   }
@@ -56,6 +77,7 @@ class Game {
     const word = this.getWord();
 
     this.renderWord(word);
+    this.startTimer();
   }
 
   getWord() {
